@@ -1,0 +1,26 @@
+{
+    "name": "pingumask/plectrum",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Pingumask\\Plectrum\\Model\\": "src/model",
+            "Pingumask\\Plectrum\\Controller\\": "src/controller"
+        },
+        "classmap": [
+            "src/model/",
+            "src/controller/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Pingumask",
+            "email": "pingumask@elanta.fr"
+        }
+    ],
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10"
+    }
+}
