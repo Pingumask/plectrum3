@@ -1,6 +1,9 @@
 <?php
 
-namespace Pingumask\Plectrum\Model;
+namespace Pingumask\Plectrum\Partial;
+
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 
 interface CommandInterface
 {
@@ -11,5 +14,5 @@ interface CommandInterface
     public const OPTIONS = [];
 
     public static function getDefinition(): string;
-    public static function execute($payload);
+    public static function execute(Request $request): Response;
 }

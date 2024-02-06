@@ -1,8 +1,8 @@
 <?php
 
-namespace Pingumask\Plectrum\Model;
+namespace Pingumask\Plectrum\Partial;
 
-use Pingumask\Plectrum\Model\CommandInterface;
+use Pingumask\Plectrum\Partial\CommandInterface;
 
 abstract class AbstractCommand implements CommandInterface
 {
@@ -14,6 +14,6 @@ abstract class AbstractCommand implements CommandInterface
             "description" => self::DESCRIPTION,
             "utilisation" => self::UTILISATION,
             "options" => self::OPTIONS
-        ]);
+        ]) ?: '';
     }
 }

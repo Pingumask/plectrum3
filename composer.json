@@ -3,12 +3,16 @@
     "type": "project",
     "autoload": {
         "psr-4": {
+            "Pingumask\\Plectrum\\Partial\\": "src/partial",
             "Pingumask\\Plectrum\\Model\\": "src/model",
-            "Pingumask\\Plectrum\\Controller\\": "src/controller"
+            "Pingumask\\Plectrum\\Command\\": "src/command",
+            "Pingumask\\Plectrum\\": "src"
         },
         "classmap": [
+            "src/partial",
             "src/model/",
-            "src/controller/"
+            "src/command/",
+            "src"
         ]
     },
     "authors": [
