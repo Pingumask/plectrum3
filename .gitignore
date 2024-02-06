@@ -1,3 +1,29 @@
-config.ini
+### Node ###
+node_modules/
+
+### Composer
 vendor/
-.htaccess
+
+### Ignore Files and Folders starting with a dot ###
+**/.*
+**/.*/*
+
+### Project specific ignores
+config.ini
+config.*.ini
+!config.template.ini
+
+### Exceptions to ignored dot files and folders ###
+!.editorconfig
+!.gitignore
+!.prettierrc
+!.vscode/
+!.github/**/*
+!**/.gitkeep
+!**/.*.template
+!**/.*.template.*
+!**/.*.template/*
+!**/.*/*.template.*
+
+### VisualStudioCode ###
+*.code-workspace
