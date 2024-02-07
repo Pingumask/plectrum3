@@ -8,10 +8,10 @@ use Pingumask\Plectrum\Partial\AbstractCommand;
 
 class Ping extends AbstractCommand
 {
-    public const NAME = "Ping";
-    public const CATEGORY = "Infos";
-    public const DESCRIPTION = "Teste la latence du bot";
-    public const UTILISATION = "{prefix}ping";
+    public const NAME = 'Ping';
+    public const CATEGORY = 'Infos';
+    public const DESCRIPTION = 'Teste la latence du bot';
+    public const UTILISATION = '{prefix}ping';
     public const OPTIONS = [];
 
     public static function execute(Request $request): Response

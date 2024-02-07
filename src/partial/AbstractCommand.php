@@ -6,14 +6,14 @@ use Pingumask\Plectrum\Partial\CommandInterface;
 
 abstract class AbstractCommand implements CommandInterface
 {
-    public static function getDefinition(): string
+    public static function getDefinition(): array
     {
-        return json_encode([
-            "name" => self::NAME,
-            "category" => self::CATEGORY,
-            "description" => self::DESCRIPTION,
-            "utilisation" => self::UTILISATION,
-            "options" => self::OPTIONS
-        ]) ?: '';
+        return [
+            'name' => static::NAME,
+            'category' => static::CATEGORY,
+            'description' => static::DESCRIPTION,
+            'utilisation' => static::UTILISATION,
+            'options' => static::OPTIONS
+        ];
     }
 }

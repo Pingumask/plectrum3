@@ -13,6 +13,6 @@ interface CommandInterface
     public const UTILISATION = "Missing Utilisation";
     public const OPTIONS = [];
 
-    public static function getDefinition(): string;
+    public static function getDefinition(): array;
     public static function execute(Request $request): Response;
 }

@@ -115,7 +115,7 @@ class App
     {
         $headers = $request->getHeaders();
         $payload = $request->getBody();
-        $publicKey = self::getConf('discord', 'client_id');
+        $publicKey = self::getConf('discord', 'public_key');
         if (
             !isset($headers['X-Signature-Ed25519'])
             || !isset($headers['X-Signature-Timestamp'])
