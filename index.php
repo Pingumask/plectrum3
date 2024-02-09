@@ -1,4 +1,5 @@
 <?php
+require_once './vendor/autoload.php';
 
 use GuzzleHttp\Psr7\Request;
 use Pingumask\Plectrum\App;

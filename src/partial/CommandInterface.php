@@ -10,9 +10,9 @@ interface CommandInterface
     public const NAME = "Missing Name";
     public const CATEGORY = "Missing Category";
     public const DESCRIPTION = "Missing Description";
-    public const UTILISATION = "Missing Utilisation";
     public const OPTIONS = [];
 
+    /** @return array<mixed> */
     public static function getDefinition(): array;
     public static function execute(Request $request): Response;
 }

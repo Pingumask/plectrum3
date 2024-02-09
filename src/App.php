@@ -22,7 +22,7 @@ class App
     public static function getConf(string $section, string $line): mixed
     {
         if (is_null(self::$config)) {
-            self::$config = parse_ini_file("../config.ini", true, INI_SCANNER_TYPED);
+            self::$config = parse_ini_file(self::basePath() . "/config.ini", true, INI_SCANNER_TYPED);
         }
         if (self::$config === false) {
             return null;
@@ -55,19 +55,18 @@ class App
 
     public static function run(Request $request): Response
     {
-        if (!self::checkSignature($request)) {
+        try {
+            self::logRequest($request);
+        } catch (PDOException $e) {
+            return new Response(503, [], "Database misconfiguration");
+        }
+        if (/*!self::getConf('discord', 'skip_check') && */!self::checkSignature($request)) {
             return new Response(401, [], "Wrong signature");
         }
 
-        try {
-            self::getDB();
-        } catch (PDOException $e) {
-            return new Response(500, [], "Database misconfiguration");
-        }
-
-
         $payload = json_decode($request->getBody(), true);
         if ($payload['type'] === 1) {
+
             $body = json_encode(['type' => 1]) ?: '';
             return new Response(200, [], $body);
         } elseif ($payload['type'] === 2) {
@@ -78,9 +77,30 @@ class App
 
     public static function sendResponse(Response $response): void
     {
+        self::logResponse($response);
         self::emitHeaders($response);
         self::emitStatusLine($response);
         self::emitBody($response);
+    }
+
+    private static function logRequest(Request $request): void
+    {
+        $database = self::getDB();
+        $sql = <<<SQL
+            INSERT INTO plectrum_logs (`type`, headers, body) VALUES ('request', ?, ?)
+        SQL;
+        $pdo = $database->prepare($sql);
+        $pdo->execute([json_encode($request->getHeaders()), $request->getBody()]);
+    }
+
+    private static function logResponse(Response $response): void
+    {
+        $database = self::getDB();
+        $sql = <<<SQL
+            INSERT INTO plectrum_logs (`type`, headers, body) VALUES ('response', ?, ?)
+        SQL;
+        $pdo = $database->prepare($sql);
+        $pdo->execute([json_encode($response->getHeaders()), $response->getBody()]);
     }
 
     private static function emitHeaders(Response $response): void
@@ -117,8 +137,8 @@ class App
         $payload = $request->getBody();
         $publicKey = self::getConf('discord', 'public_key');
         if (
-            !isset($headers['X-Signature-Ed25519'])
-            || !isset($headers['X-Signature-Timestamp'])
+            empty($headers['X-Signature-Ed25519'])
+            || empty($headers['X-Signature-Timestamp'])
         ) {
             return false;
         }
@@ -126,7 +146,11 @@ class App
         $signature = $headers['X-Signature-Ed25519'][0];
         $timestamp = $headers['X-Signature-Timestamp'][0];
 
-        if (empty(trim($signature, '0..9A..Fa..f'))) {
+        if (empty($signature)) {
+            return false;
+        }
+
+        if (!empty(trim($signature, '0..9A..Fa..f'))) {
             return false;
         }
 
@@ -146,12 +170,12 @@ class App
 
     private static function handleCommand(Request $request): Response
     {
-        $params = explode('/', $request->getUri()->getPath());
-        $commandName = (ucfirst($params[1]) ?: 'Home') . "Controller";
-        $commmandClass = "Pingumask\Plectrum\Command\\" . $commandName;
+        $payload = json_decode($request->getBody());
+        $commandName = $payload->data->name;
+        $commmandClass = "Pingumask\Plectrum\Command\\" . ucfirst($commandName);
 
         spl_autoload_register(function ($commandName) {
-            $commandPath = self::basePath() . "/src/command/$commandName.php";
+            $commandPath = self::basePath() . "/src/command/" . ucfirst($commandName) . ".php";
             if (file_exists($commandPath)) {
                 require_once $commandPath;
             }
