@@ -15,6 +15,6 @@ class Ping extends AbstractCommand
 
     public static function execute(Request $request): Response
     {
-        return self::genReply('Pong', false);
+        return self::genReply(content: 'Pong');
     }
 }

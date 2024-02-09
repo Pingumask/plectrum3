@@ -16,6 +16,6 @@ class Pileface extends AbstractCommand
     public static function execute(Request $request): Response
     {
         $coin = rand(0, 1) ? 'Pile' : 'Face';
-        return self::genReply($coin, false);
+        return self::genReply(content: $coin);
     }
 }
