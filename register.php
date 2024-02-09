@@ -1,12 +1,12 @@
 <?php
-require_once '../vendor/autoload.php';
+require_once './vendor/autoload.php';
 
 use Pingumask\Plectrum\App;
 
 $clientId = App::getConf('discord', 'client_id');
 $token = App::getConf('discord', 'token');
 $commands = [];
-$dir = new DirectoryIterator("../src/command");
+$dir = new DirectoryIterator("./src/command");
 $client = new GuzzleHttp\Client();
 foreach ($dir as $fileinfo) {
     $filename = $fileinfo->getFileName();
