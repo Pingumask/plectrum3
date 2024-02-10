@@ -30,3 +30,8 @@ parameters:
             - vendor
     scanFiles:
         - index.php
+    ignoreErrors:
+        -
+            message: '#Class .+ has an uninitialized property \$.+\. Give it default value or assign it in the constructor\.#'
+            paths:
+                - src/partial/Embed.php

@@ -4,8 +4,8 @@ namespace Pingumask\Plectrum\Partial;
 
 class Embed
 {
-    /** @var array<string, string> */
-    public ?array $footer = [];
+    /** @var ?array<string, string> */
+    public ?array $footer;
 
     public function __construct(
         public ?string $title = null,
