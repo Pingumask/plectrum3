@@ -73,7 +73,7 @@ class Divination extends AbstractCommand
         if (strlen($question) > 1200) {
             return self::genReply(content: "J'ai pas compris la question", flags: Message::FLAG_EPHEMERAL);
         }
-        $embed = new Embed(description: "**Question:**{$question}\n**Réponse:**{$reponse}");
+        $embed = new Embed(description: "**Question:** {$question}\n**Réponse:** {$reponse}");
 
         return self::genReply(embeds: [$embed]);
     }
