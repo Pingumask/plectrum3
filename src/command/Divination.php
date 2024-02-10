@@ -6,7 +6,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Pingumask\Plectrum\Partial\AbstractCommand;
 use Pingumask\Plectrum\Partial\Embed;
-use Pingumask\Plectrum\Partial\Message;
+use Pingumask\Plectrum\Partial\DiscordConst;
 
 class Divination extends AbstractCommand
 {
@@ -17,7 +17,7 @@ class Divination extends AbstractCommand
         [
             "name" => "question",
             "description" => "La question à laquelle le bot va répondre",
-            "type" => 3, //type 3 = STRING
+            "type" => DiscordConst::OPTION_TYPE_STRING,
             "required" => true,
         ],
     ];
@@ -71,7 +71,7 @@ class Divination extends AbstractCommand
         $question = $interaction->data->options[0]->value;
         $reponse = self::PHRASES[array_rand(self::PHRASES)];
         if (strlen($question) > 1200) {
-            return self::genReply(content: "J'ai pas compris la question", flags: Message::FLAG_EPHEMERAL);
+            return self::genReply(content: "J'ai pas compris la question", flags: DiscordConst::FLAG_EPHEMERAL);
         }
         $embed = new Embed(description: "**Question:** {$question}\n**Réponse:** {$reponse}");
 

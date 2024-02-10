@@ -5,6 +5,7 @@ namespace Pingumask\Plectrum\Partial;
 use GuzzleHttp\Psr7\Response;
 use Pingumask\Plectrum\App;
 use Pingumask\Plectrum\Partial\CommandInterface;
+use Pingumask\Plectrum\Partial\DiscordConst;
 
 abstract class AbstractCommand implements CommandInterface
 {
@@ -29,12 +30,8 @@ abstract class AbstractCommand implements CommandInterface
     protected static function genReply(?string $content = null, ?int $flags = 0, ?array $embeds = null): Response
     {
         $message = [
-            'type' => 4,
-            'data' => [
-                'allowed_mentions' => [
-                    'parse' => []
-                ]
-            ]
+            'type' => DiscordConst::INTERACTION_CALLBACK_CHANNEL_MESSAGE_WITH_SOURCE,
+            'data' => [],
         ];
         if (!is_null($content)) {
             $message['data']['content'] = $content;

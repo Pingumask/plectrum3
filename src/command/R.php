@@ -5,8 +5,8 @@ namespace Pingumask\Plectrum\Command;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Pingumask\Plectrum\Partial\AbstractCommand;
+use Pingumask\Plectrum\Partial\DiscordConst;
 use Pingumask\Plectrum\Partial\Embed;
-use Pingumask\Plectrum\Partial\Message;
 
 class R extends AbstractCommand
 {
@@ -17,7 +17,7 @@ class R extends AbstractCommand
         [
             "name" => "dés",
             "description" => "Le nombre de dés et le nombre de faces au format jeu de rôle : [dés]d[faces]",
-            "type" => 3, //type 3 = STRING
+            "type" => DiscordConst::OPTION_TYPE_STRING,
             "required" => true,
         ],
     ];
@@ -31,11 +31,11 @@ class R extends AbstractCommand
 
         if (empty($dices) || $dices <  1 || empty($sides) || $sides < 1) {
             return self::genReply("L'envoi de dés soit se faire au format jeu de rôles : [nombre de dés]d[nombre de faces]
-                    \nexample: \`/r 3d6\` pour lancer trois dés à six faces.", Message::FLAG_EPHEMERAL);
+                    \nexample: \`/r 3d6\` pour lancer trois dés à six faces.", DiscordConst::FLAG_EPHEMERAL);
         }
 
         if ($dices > 10000) {
-            return self::genReply("Impossible de lancer plus de 10 000 dés à la fois.", Message::FLAG_EPHEMERAL);
+            return self::genReply("Impossible de lancer plus de 10 000 dés à la fois.", DiscordConst::FLAG_EPHEMERAL);
         }
 
         $rolls = [];
