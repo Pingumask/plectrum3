@@ -6,8 +6,17 @@ namespace Pingumask\Plectrum\Partial;
 
 abstract class DiscordConst
 {
+    const FLAG_CROSSPOSTED = 1 << 0;
+    const FLAGIS_CROSSPOST = 1 << 1;
     const FLAG_SUPPRESS_EMBEDS = 1 << 2;
+    const FLAG_SOURCE_MESSAGE_DELETED = 1 << 3;
+    const FLAG_URGENT = 1 << 4;
+    const FLAG_HAS_THREAD = 1 << 5;
     const FLAG_EPHEMERAL = 1 << 6;
+    const FLAG_LOADING = 1 << 7;
+    const FLAG_FAILED_TO_MENTION_SOME_ROLES_IN_THREAD = 1 << 8;
+    const FLAG_SUPPRESS_NOTIFICATIONS = 1 << 12;
+    const FLAG_IS_VOICE_MESSAGE = 1 << 13;
 
     const OPTION_TYPE_SUB_COMMAND = 1;
     const OPTION_TYPE_SUB_COMMAND_GROUP = 2;
