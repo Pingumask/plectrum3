@@ -5,6 +5,7 @@ namespace Pingumask\Plectrum\Command;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Pingumask\Plectrum\Partial\AbstractCommand;
+use Pingumask\Plectrum\Partial\Embed;
 use Pingumask\Plectrum\Partial\Message;
 
 class R extends AbstractCommand
@@ -59,13 +60,9 @@ class R extends AbstractCommand
             $footer = $total;
         }
 
-        $embed = [
-            "title" => "Lance {$dices} dé" . (($dices > 1) ? "s" : "") . " à {$sides} faces :",
-            "description" => $description,
-            "footer" => [
-                "text" => $footer,
-            ],
-        ];
+        $title = "Lance {$dices} dé" . (($dices > 1) ? "s" : "") . " à {$sides} faces :";
+
+        $embed = new Embed(title: $title, description: $description, footerText: $footer);
 
         return self::genReply(embeds: [$embed]);
     }

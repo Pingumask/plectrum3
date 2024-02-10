@@ -5,6 +5,7 @@ namespace Pingumask\Plectrum\Command;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Pingumask\Plectrum\Partial\AbstractCommand;
+use Pingumask\Plectrum\Partial\Embed;
 
 class Carte extends AbstractCommand
 {
@@ -32,9 +33,9 @@ class Carte extends AbstractCommand
     {
         $symbole = self::SYMBOLES[array_rand(self::SYMBOLES)];
         $valeur = self::VALEURS[array_rand(self::VALEURS)];
-        $embed = [
-            "title" => $symbole . $valeur,
-        ];
+
+        $embed = new Embed(title: $symbole . $valeur);
+
         return self::genReply(embeds: [$embed]);
     }
 }
