@@ -13,7 +13,7 @@ foreach ($dir as $fileinfo) {
     list($className, $extension) = explode('.', $filename);
     $class = "Pingumask\Plectrum\Command\\$className";
     if (class_exists($class)) {
-        $command = new $class();
+        $commands[] = $command = new $class();
         $body = json_encode($command::getDefinition());
         $client->request(
             'POST',
@@ -26,6 +26,7 @@ foreach ($dir as $fileinfo) {
                 'body' => $body
             ]
         );
-        fwrite(STDOUT, $command::NAME . " registered" . PHP_EOL);
+        fwrite(STDOUT, $command::NAME . " command listed" . PHP_EOL);
     }
 }
+fwrite(STDOUT, count($commands) . " commands registered" . PHP_EOL);
