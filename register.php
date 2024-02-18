@@ -9,6 +9,7 @@ $commands = [];
 $dir = new DirectoryIterator("./src/command");
 $client = new GuzzleHttp\Client();
 foreach ($dir as $fileinfo) {
+    sleep(2);
     $filename = $fileinfo->getFileName();
     list($className, $extension) = explode('.', $filename);
     $class = "Pingumask\Plectrum\Command\\$className";
