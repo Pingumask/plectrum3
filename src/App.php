@@ -60,7 +60,7 @@ class App
         } catch (PDOException $e) {
             return new Response(503, [], "Database misconfiguration");
         }
-        if (!self::getConf('discord', 'skip_check') && !self::checkSignature($request)) {
+        if (!self::getConf('discord', 'skip_signature_check') && !self::checkSignature($request)) {
             return new Response(401, [], "Wrong signature");
         }
 
