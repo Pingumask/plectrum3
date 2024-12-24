@@ -3,8 +3,7 @@
 namespace Pingumask\Plectrum\Command;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Pingumask\Plectrum\Partial\AbstractCommand;
+use Pingumask\Discord\AbstractCommand;
 
 class Ping extends AbstractCommand
 {
@@ -13,8 +12,8 @@ class Ping extends AbstractCommand
     public const DESCRIPTION = 'Teste la latence du bot';
     public const OPTIONS = [];
 
-    public static function execute(Request $request): Response
+    public static function execute(Request $request): void
     {
-        return self::genReply(content: 'Pong');
+        self::reply(content: 'Pong');
     }
 }

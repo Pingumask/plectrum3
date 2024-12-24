@@ -3,16 +3,20 @@
     "type": "project",
     "autoload": {
         "psr-4": {
-            "Pingumask\\Plectrum\\Partial\\": "src/partial",
+            "Pingumask\\Discord\\": "src/provider/discord",
             "Pingumask\\Plectrum\\Model\\": "src/model",
             "Pingumask\\Plectrum\\Command\\": "src/command",
+            "Pingumask\\Plectrum\\Button\\": "src/button",
+            "Pingumask\\Plectrum\\Select\\": "src/select",
             "Pingumask\\Plectrum\\": "src"
         },
         "classmap": [
-            "src/partial",
+            "src/provider/discord/",
             "src/model/",
             "src/command/",
-            "src"
+            "src/button/",
+            "src/select/",
+            "src/"
         ]
     },
     "authors": [

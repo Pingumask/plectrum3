@@ -3,10 +3,10 @@
 namespace Pingumask\Plectrum\Command;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Pingumask\Plectrum\Partial\AbstractCommand;
-use Pingumask\Plectrum\Partial\Embed;
-use Pingumask\Plectrum\Partial\DiscordConst;
+use Pingumask\Discord\AbstractCommand;
+use Pingumask\Discord\Embed;
+use Pingumask\Discord\Flag;
+use Pingumask\Discord\OptionType;
 
 class Divination extends AbstractCommand
 {
@@ -17,7 +17,7 @@ class Divination extends AbstractCommand
         [
             "name" => "question",
             "description" => "La question à laquelle le bot va répondre",
-            "type" => DiscordConst::OPTION_TYPE_STRING,
+            "type" => OptionType::STRING,
             "required" => true,
         ],
     ];
@@ -65,16 +65,17 @@ class Divination extends AbstractCommand
         "Mais bien sûr que non enfin !",
     ];
 
-    public static function execute(Request $request): Response
+    public static function execute(Request $request): void
     {
         $interaction = json_decode($request->getBody());
         $question = $interaction->data->options[0]->value;
         $reponse = self::PHRASES[array_rand(self::PHRASES)];
         if (strlen($question) > 1200) {
-            return self::genReply(content: "J'ai pas compris la question", flags: DiscordConst::FLAG_EPHEMERAL);
+            self::reply(content: "J'ai pas compris la question", flags: Flag::EPHEMERAL->value);
+            return;
         }
         $embed = new Embed(description: "**Question:** {$question}\n**Réponse:** {$reponse}");
 
-        return self::genReply(embeds: [$embed]);
+        self::reply(embeds: [$embed]);
     }
 }

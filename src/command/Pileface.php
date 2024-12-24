@@ -3,8 +3,7 @@
 namespace Pingumask\Plectrum\Command;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Pingumask\Plectrum\Partial\AbstractCommand;
+use Pingumask\Discord\AbstractCommand;
 
 class Pileface extends AbstractCommand
 {
@@ -13,9 +12,9 @@ class Pileface extends AbstractCommand
     public const DESCRIPTION = 'Tire à pile ou face';
     public const OPTIONS = [];
 
-    public static function execute(Request $request): Response
+    public static function execute(Request $request): void
     {
         $coin = rand(0, 1) ? 'Pile' : 'Face';
-        return self::genReply(content: $coin);
+        self::reply(content: $coin);
     }
 }

@@ -3,10 +3,11 @@
 namespace Pingumask\Plectrum\Command;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Pingumask\Plectrum\Partial\AbstractCommand;
-use Pingumask\Plectrum\Partial\DiscordConst;
-use Pingumask\Plectrum\Partial\Embed;
+use Pingumask\Discord\AbstractCommand;
+use Pingumask\Discord\Embed;
+use Pingumask\Discord\Flag;
+use Pingumask\Discord\InteractionCallback;
+use Pingumask\Discord\OptionType;
 
 class R extends AbstractCommand
 {
@@ -17,26 +18,35 @@ class R extends AbstractCommand
         [
             "name" => "dés",
             "description" => "Le nombre de dés et le nombre de faces au format jeu de rôle : [dés]d[faces]",
-            "type" => DiscordConst::OPTION_TYPE_STRING,
+            "type" => OptionType::STRING,
             "required" => true,
         ],
     ];
 
-    public static function execute(Request $request): Response
+    public static function execute(Request $request): void
     {
         $interaction = json_decode($request->getBody());
+        if (!str_contains($interaction->data->options[0]->value, 'd')) {
+            self::reply(content: "L'envoi de dés doit se faire au format jeu de rôles : [nombre de dés]d[nombre de faces]
+                    \nexample: \`/r 3d6\` pour lancer trois dés à six faces.", flags: Flag::EPHEMERAL->value);
+            return;
+        }
         list($dices, $sides) = explode('d', $interaction->data->options[0]->value);
         $dices = (int)$dices;
         $sides = (int)$sides;
 
         if (empty($dices) || $dices <  1 || empty($sides) || $sides < 1) {
-            return self::genReply("L'envoi de dés soit se faire au format jeu de rôles : [nombre de dés]d[nombre de faces]
-                    \nexample: \`/r 3d6\` pour lancer trois dés à six faces.", DiscordConst::FLAG_EPHEMERAL);
+            self::reply(content: "L'envoi de dés doit se faire au format jeu de rôles : [nombre de dés]d[nombre de faces]
+                    \nexample: \`/r 3d6\` pour lancer trois dés à six faces.", flags: Flag::EPHEMERAL->value);
+            return;
         }
 
-        if ($dices > 10000) {
-            return self::genReply("Impossible de lancer plus de 10 000 dés à la fois.", DiscordConst::FLAG_EPHEMERAL);
+        if ($dices > 10_000) {
+            self::reply(content: "Impossible de lancer plus de 10 000 dés à la fois.", flags: Flag::EPHEMERAL->value);
+            return;
         }
+
+        self::reply(type: InteractionCallback::DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE);
 
         $rolls = [];
         $total = 0;
@@ -64,6 +74,6 @@ class R extends AbstractCommand
 
         $embed = new Embed(title: $title, description: $description, footerText: $footer);
 
-        return self::genReply(embeds: [$embed]);
+        self::updateReply(request: $request, embeds: [$embed]);
     }
 }

@@ -3,10 +3,11 @@
 namespace Pingumask\Plectrum\Command;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Pingumask\Plectrum\Partial\AbstractCommand;
-use Pingumask\Plectrum\Partial\Embed;
-use Pingumask\Plectrum\Partial\DiscordConst;
+use Pingumask\Discord\AbstractCommand;
+use Pingumask\Discord\Embed;
+use Pingumask\Discord\Flag;
+use Pingumask\Discord\OptionType;
+use Pingumask\Plectrum\Model\Cooldown;
 
 class Calin extends AbstractCommand
 {
@@ -17,7 +18,7 @@ class Calin extends AbstractCommand
         [
             "name" => "destinataire",
             "description" => "A qui faire le câlin",
-            "type" => DiscordConst::OPTION_TYPE_STRING,
+            "type" => OptionType::STRING,
             "required" => true,
         ],
     ];
@@ -26,26 +27,47 @@ class Calin extends AbstractCommand
         "https://c.tenor.com/vVBFWMH7J9oAAAAC/hug-peachcat.gif",
         "https://c.tenor.com/wqCAHtQuTnkAAAAC/milk-and-mocha-hug.gif",
         "https://c.tenor.com/FduR7Yr84OQAAAAC/milk-and-mocha-kiss.gif",
-        "https://c.tenor.com/jX1-mxefJ54AAAAC/cat-hug.gif",
     ];
 
-    public static function execute(Request $request): Response
+    public static function execute(Request $request): void
     {
         $interaction = json_decode($request->getBody());
-        // TODO: handle per guild timer
         $picked = self::IMAGES[array_rand(self::IMAGES)];
         $target = $interaction->data->options[0]->value;
         if (strlen($target) > 300) {
-            return self::genReply(content: "Ça fait beaucoup là, non ?", flags: DiscordConst::FLAG_EPHEMERAL);
+            self::reply(content: "Ça fait beaucoup là, non ?", flags: Flag::EPHEMERAL->value);
+            return;
         }
+
+        if ($time = Cooldown::getEnd(
+            guild: $interaction->guild_id,
+            user: $interaction->member->user->id,
+            command: 'Calin',
+            interval: 300
+        )) {
+            self::reply(content: "Tu fais ça trop souvent, tu pourra recommencer <t:$time:R>", flags: Flag::EPHEMERAL->value);
+            return;
+        } else {
+            Cooldown::set(
+                guild: $interaction->guild_id,
+                user: $interaction->member->user->id,
+                command: 'Calin'
+            );
+        }
+
         $embed = new Embed(
-            description: "<@{$interaction->member->user->id}> fait un câlin à {$target} <3.",
-            imageUrl: $picked
+            imageUrl: $picked,
         );
 
-        //TODO: edit embed to remove image after delay
-        //TODO: check mentions handling
+        // send initial calin with mention
+        self::reply(content: "<@{$interaction->member->user->id}> fait un câlin à {$target} <3.", embeds: [$embed]);
 
-        return self::genReply(content: "<@{$interaction->member->user->id}> fait un câlin à {$target} <3.", embeds: [$embed]);
+        sleep(30);
+
+        // remove gif
+        $embed = new Embed(
+            description: "<@{$interaction->member->user->id}> fait un calin à {$target} <3.",
+        );
+        self::updateReply(request: $request, content: "", embeds: [$embed]);
     }
 }

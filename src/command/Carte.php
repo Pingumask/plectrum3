@@ -3,9 +3,8 @@
 namespace Pingumask\Plectrum\Command;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Pingumask\Plectrum\Partial\AbstractCommand;
-use Pingumask\Plectrum\Partial\Embed;
+use Pingumask\Discord\AbstractCommand;
+use Pingumask\Discord\Embed;
 
 class Carte extends AbstractCommand
 {
@@ -29,13 +28,13 @@ class Carte extends AbstractCommand
     ];
     const SYMBOLES = ["♠", "♥", "♣", "♦"];
 
-    public static function execute(Request $request): Response
+    public static function execute(Request $request): void
     {
         $symbole = self::SYMBOLES[array_rand(self::SYMBOLES)];
         $valeur = self::VALEURS[array_rand(self::VALEURS)];
 
         $embed = new Embed(title: $symbole . $valeur);
 
-        return self::genReply(embeds: [$embed]);
+        self::reply(embeds: [$embed]);
     }
 }

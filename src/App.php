@@ -7,7 +7,13 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use PDO;
 use PDOException;
-use Pingumask\Plectrum\Partial\AbstractCommand;
+use Pingumask\Discord\AbstractButton;
+use Pingumask\Discord\AbstractCommand;
+use Pingumask\Discord\AbstractSelect;
+use Pingumask\Discord\ComponentType;
+use Pingumask\Discord\InteractionCallback;
+use Pingumask\Discord\InteractionType;
+use RuntimeException;
 
 class App
 {
@@ -19,7 +25,7 @@ class App
         return dirname(__DIR__);
     }
 
-    public static function getConf(string $section, string $line): mixed
+    public static function getConf(string $section, string $line, mixed $default = null): mixed
     {
         if (is_null(self::$config)) {
             self::$config = parse_ini_file(self::basePath() . "/config.ini", true, INI_SCANNER_TYPED);
@@ -27,7 +33,7 @@ class App
         if (self::$config === false) {
             return null;
         }
-        return self::$config[$section][$line] ?? null;
+        return self::$config[$section][$line] ?? $default;
     }
 
     /**
@@ -53,40 +59,64 @@ class App
         }
     }
 
-    public static function run(Request $request): Response
+    public static function run(Request $request): void
     {
         try {
             self::logRequest($request);
         } catch (PDOException $e) {
-            return new Response(503, [], "Database misconfiguration");
+            self::sendReply(new Response(503, [], "Database misconfiguration"));
+            return;
         }
         if (!self::getConf('discord', 'skip_signature_check') && !self::checkSignature($request)) {
-            return new Response(401, [], "Wrong signature");
+            self::sendReply(new Response(401, [], "Wrong signature"));
+            return;
         }
 
         $payload = json_decode($request->getBody(), true);
-        if ($payload['type'] === 1) {
-
-            $body = json_encode(['type' => 1]) ?: '';
-            return new Response(200, [], $body);
-        } elseif ($payload['type'] === 2) {
-            return self::handleCommand($request);
+        switch ($payload['type']) {
+            case InteractionType::INTERACTION_TYPE_PING->value:
+                $body = json_encode(['type' => InteractionCallback::PONG]) ?: '';
+                self::sendReply(new Response(200, [], $body));
+                return;
+            case InteractionType::INTERACTION_TYPE_APPLICATION_COMMAND->value:
+                self::handleCommand($request);
+                return;
+            case InteractionType::INTERACTION_TYPE_MESSAGE_COMPONENT->value:
+                self::handleComponent($request);
+                return;
+            default:
+                self::sendReply(new Response(501, [], "Interaction not implemented"));
         }
-        return new Response(501, [], "Not implemented");
     }
 
-    public static function sendResponse(Response $response): void
+    public static function sendReply(Response $response): void
     {
-        self::logResponse($response);
-        self::emitHeaders($response);
-        self::emitStatusLine($response);
+        ignore_user_abort(true);
+        ob_start();
         self::emitBody($response);
+        $response->withHeader('Content-Encoding', 'none');
+        $response->withHeader('Content-Length', (string)ob_get_length());
+        $response->withHeader('Connection', 'close');
+        self::emitStatusLine($response);
+        self::emitHeaders($response);
+        self::logResponse($response);
+
+        // Flush all output.
+        ob_end_flush();
+        @ob_flush();
+        flush();
+
+        // close fpm request
+
+        session_write_close();
+        fastcgi_finish_request();
     }
 
     private static function logRequest(Request $request): void
     {
         $database = self::getDB();
         $sql = <<<SQL
+            DELETE FROM plectrum_logs WHERE time < NOW() - INTERVAL 7 DAY;
             INSERT INTO plectrum_logs (`type`, headers, body) VALUES ('request', ?, ?)
         SQL;
         $pdo = $database->prepare($sql);
@@ -168,7 +198,7 @@ class App
         return true;
     }
 
-    private static function handleCommand(Request $request): Response
+    private static function handleCommand(Request $request): void
     {
         $payload = json_decode($request->getBody());
         $commandName = $payload->data->name;
@@ -186,12 +216,81 @@ class App
         ) {
             $controller = new $commmandClass();
             if (is_a($controller,  AbstractCommand::class)) {
-                return $commmandClass::execute($request);
+                $commmandClass::execute($request);
             } else {
-                return new Response(501, [], "Not implemented");
+                self::sendReply(new Response(501, [], "$commmandClass is not a command"));
             }
         } else {
-            return new Response(501, [], "Not implemented");
+            self::sendReply(new Response(501, [], "$commmandClass command is not implemented"));
+        }
+    }
+
+    private static function handleComponent(Request $request): void
+    {
+        $payload = json_decode($request->getBody());
+        switch ($payload->data->component_type) {
+            case ComponentType::BUTTON->value:
+                self::handleButton($request);
+                return;
+            case ComponentType::CHANNEL_SELECT->value:
+                self::handleChannelSelect($request);
+                return;
+            default:
+                self::sendReply(new Response(501, [], "Component type  {$payload->data->component_type} not implemented"));
+        }
+    }
+
+    private static function handleButton(Request $request): void
+    {
+        $payload = json_decode($request->getBody());
+        $buttonName = $payload->data->custom_id;
+        $buttonClass = "Pingumask\Plectrum\Button\\$buttonName";
+
+        spl_autoload_register(function ($buttonName) {
+            $buttonPath = self::basePath() . "/src/button/{$buttonName}.php";
+            if (file_exists($buttonPath)) {
+                require_once $buttonPath;
+            }
+        });
+
+        if (
+            class_exists($buttonClass)
+        ) {
+            $controller = new $buttonClass();
+            if (is_a($controller,  AbstractButton::class)) {
+                $buttonClass::execute($request);
+            } else {
+                self::sendReply(new Response(501, [], "$buttonClass is not a button"));
+            }
+        } else {
+            self::sendReply(new Response(501, [], "$buttonClass button is not implemented"));
+        }
+    }
+
+    private static function handleChannelSelect(Request $request): void
+    {
+        $payload = json_decode($request->getBody());
+        $selectName = $payload->data->custom_id;
+        $selectClass = "Pingumask\Plectrum\Select\\$selectName";
+
+        spl_autoload_register(function ($selectName) {
+            $selectPath = self::basePath() . "/src/select/{$selectName}.php";
+            if (file_exists($selectPath)) {
+                require_once $selectPath;
+            }
+        });
+
+        if (
+            class_exists($selectClass)
+        ) {
+            $controller = new $selectClass();
+            if (is_a($controller,  AbstractSelect::class)) {
+                $selectClass::execute($request);
+            } else {
+                self::sendReply(new Response(501, [], "$selectClass is not a select component"));
+            }
+        } else {
+            self::sendReply(new Response(501, [], "$selectClass select is not implemented"));
         }
     }
 }
